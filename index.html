@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icons (Lucide) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -215,6 +218,22 @@
                     </div>
                 </div>
 
+                <!-- Alert Map -->
+                <div class="bg-white rounded-2xl shadow-soft border border-slate-200 mb-8 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="map" class="w-5 h-5 text-brand"></i>
+                            <h3 class="text-lg font-bold text-slate-800">Mappa Allerte Nazionali</h3>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px] font-semibold">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow-sm"></span> Rossa</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-sm"></span> Gialla</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block shadow-sm"></span> Informativo</span>
+                        </div>
+                    </div>
+                    <div id="alert-map" class="h-72 w-full z-0"></div>
+                </div>
+
                 <!-- Main Feed Component -->
                 <div class="bg-white rounded-2xl shadow-soft border border-slate-200 flex flex-col">
                     <!-- Feed Header -->
@@ -227,7 +246,12 @@
                                 </span>
                                 Feed Allerte in Tempo Reale
                             </h3>
-                            <p class="text-xs text-slate-500 mt-1 font-medium">Dati estratti via Meta Graph API e classificati da modello NLP.</p>
+                            <div class="flex items-center gap-2 mt-2 flex-wrap">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600 text-white text-[11px] font-bold uppercase tracking-wide shadow-md shadow-blue-500/20 border border-blue-500">
+                                    <i data-lucide="facebook" class="w-3.5 h-3.5"></i> Fonte Dati: Graph API - Facebook Public Pages
+                                </span>
+                                <span class="text-xs text-slate-400 font-medium">Dati estratti via Meta Graph API e classificati da modello NLP.</span>
+                            </div>
                         </div>
                         <div class="flex gap-2 w-full sm:w-auto">
                             <button onclick="showToast('Menu filtri attivato', 'info')" class="flex-1 sm:flex-none justify-center px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-colors shadow-sm focus:ring-2 focus:ring-slate-200 focus:outline-none">
@@ -246,8 +270,8 @@
                         <div id="alert-1" class="p-6 hover:bg-slate-50/50 transition-colors relative border-l-4 border-alert-high">
                             <div class="absolute left-0 top-0 bottom-0 w-1 bg-alert-high rounded-l-2xl"></div>
                             <div class="flex items-start gap-5">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex-shrink-0 flex items-center justify-center text-blue-600 shadow-sm relative">
-                                    <i data-lucide="facebook" class="w-6 h-6"></i>
+                                <div class="w-12 h-12 rounded-full bg-blue-50 border-2 border-blue-200 flex-shrink-0 overflow-hidden shadow-sm relative">
+                                    <img src="https://ui-avatars.com/api/?name=PC+Liguria&background=D32F2F&color=fff&size=96&bold=true&font-size=0.35" alt="PC Liguria" class="w-full h-full object-cover">
                                     <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 border border-slate-200 cursor-pointer" onclick="showToast('AI Model: Geoverse-Emergency-Net v2', 'info')">
                                         <i data-lucide="zap" class="w-3 h-3 text-amber-500 fill-amber-500"></i>
                                     </div>
@@ -256,8 +280,9 @@
                                     <div class="flex flex-col xl:flex-row xl:justify-between xl:items-start mb-2 gap-2">
                                         <div>
                                             <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors" onclick="window.open('https://facebook.com')">Comune di Genova - Pagina Ufficiale</h4>
+                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors" onclick="window.open('https://facebook.com')">Pagina: Protezione Civile Regione Liguria</h4>
                                                 <i data-lucide="badge-check" class="w-4 h-4 text-blue-500 -ml-1"></i>
+                                                <span class="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Pagina Facebook Pubblica</span>
                                                 <span class="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-100 px-2 py-0.5 rounded">
                                                     <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Oggi, 14:30
                                                 </span>
@@ -277,7 +302,49 @@
                                         <p class="text-slate-700">
                                             <span class="font-bold text-slate-900 bg-yellow-100 px-1 rounded">AVVISO ALLA CITTADINANZA:</span> Diramata allerta meteo ROSSA per piogge diffuse e temporali forti a partire dalle <span class="bg-yellow-100 px-1 rounded">ore 18:00</span> di oggi. Scuole chiuse nella giornata di <span class="bg-yellow-100 px-1 rounded">domani</span>. Evitare gli spostamenti non necessari.
                                         </p>
+                                        <div class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 font-medium">
+                                            <span class="flex items-center gap-1">👍 312 Like</span>
+                                            <span class="flex items-center gap-1">💬 47 Commenti</span>
+                                            <span class="flex items-center gap-1">↗️ 89 Condivisioni</span>
+                                            <span class="ml-auto text-[10px] font-mono text-slate-400 flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3"></i> Pubblico</span>
+                                        </div>
                                     </div>
+
+                                    <!-- Post Attachment Image -->
+                                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                                        <img src="https://images.unsplash.com/photo-1547683905-f686c993aae5?w=800&h=400&fit=crop&auto=format" alt="Alluvione Genova" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-500">
+                                        <div class="bg-slate-50 px-3 py-2 border-t border-slate-200 flex items-center gap-2 text-[11px] text-slate-400">
+                                            <i data-lucide="image" class="w-3 h-3"></i>
+                                            <span>Immagine allegata al post Facebook</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- NLP Analysis Result -->
+                                    <div class="mt-3 p-4 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 border border-red-200/60 shadow-sm">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <div class="bg-alert-high text-white p-1.5 rounded-md shadow-sm">
+                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                            </div>
+                                            <span class="text-[11px] font-bold text-alert-high uppercase tracking-wider">Analisi IA</span>
+                                            <span class="ml-auto text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">conf: 98.2%</span>
+                                        </div>
+                                        <p class="text-sm font-medium text-slate-800 mb-3 leading-relaxed">Allerta meteo rossa dalle 18:00 per piogge forti. Chiusura scuole per domani.</p>
+                                        <div class="flex flex-wrap gap-1.5 mb-3">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-[11px] font-semibold border border-red-200">
+                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Evitare spostamenti non necessari
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-[11px] font-semibold border border-red-200">
+                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Non sostare nei pressi di corsi d'acqua
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                                            <i data-lucide="map-pin" class="w-3 h-3 text-red-400"></i>
+                                            <span class="font-medium">Luoghi citati:</span>
+                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">Genova</span>
+                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">fiume Polcevera</span>
+                                        </div>
+                                    </div>
+
                                     <div class="flex flex-wrap gap-3">
                                         <button onclick="escalaAlert('alert-1', this)" class="px-5 py-2.5 bg-alert-high hover:bg-[#b71c1c] text-white rounded-lg text-sm font-semibold transition-all shadow-md shadow-red-500/20 flex items-center gap-2 active:scale-95">
                                             <i data-lucide="phone-call" class="w-4 h-4"></i> Escala a Protezione Civile
@@ -285,6 +352,9 @@
                                         <button onclick="showRawData('101584736284')" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 hover:border-slate-400 active:scale-95 shadow-sm">
                                             <i data-lucide="code" class="w-4 h-4 text-slate-400"></i> Dati Meta Raw (JSON)
                                         </button>
+                                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 active:scale-95 shadow-sm">
+                                            <i data-lucide="external-link" class="w-4 h-4"></i> Post Originale
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -294,8 +364,8 @@
                         <div id="alert-2" class="p-6 hover:bg-slate-50/50 transition-colors relative border-l-4 border-alert-medium">
                             <div class="absolute left-0 top-0 bottom-0 w-1 bg-alert-medium"></div>
                             <div class="flex items-start gap-5">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex-shrink-0 flex items-center justify-center text-blue-600 shadow-sm relative">
-                                    <i data-lucide="facebook" class="w-6 h-6"></i>
+                                <div class="w-12 h-12 rounded-full bg-blue-50 border-2 border-amber-200 flex-shrink-0 overflow-hidden shadow-sm relative">
+                                    <img src="https://ui-avatars.com/api/?name=PC+Campania&background=F57C00&color=fff&size=96&bold=true&font-size=0.35" alt="PC Campania" class="w-full h-full object-cover">
                                     <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 border border-slate-200">
                                         <i data-lucide="zap" class="w-3 h-3 text-amber-500 fill-amber-500"></i>
                                     </div>
@@ -304,8 +374,9 @@
                                     <div class="flex flex-col xl:flex-row xl:justify-between xl:items-start mb-2 gap-2">
                                         <div>
                                             <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors">Dipartimento Protezione Civile</h4>
+                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors">Pagina: Protezione Civile Regione Campania</h4>
                                                 <i data-lucide="badge-check" class="w-4 h-4 text-blue-500 -ml-1"></i>
+                                                <span class="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Pagina Facebook Pubblica</span>
                                                 <span class="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-100 px-2 py-0.5 rounded">
                                                     <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Oggi, 13:15
                                                 </span>
@@ -325,7 +396,49 @@
                                         <p class="text-slate-700">
                                             Maltempo in arrivo al <span class="bg-yellow-100 px-1 rounded">Centro-Sud</span>. Venti di burrasca e mareggiate lungo le coste tirreniche. Segui gli aggiornamenti sul nostro sito.
                                         </p>
+                                        <div class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 font-medium">
+                                            <span class="flex items-center gap-1">👍 145 Like</span>
+                                            <span class="flex items-center gap-1">💬 32 Commenti</span>
+                                            <span class="flex items-center gap-1">↗️ 56 Condivisioni</span>
+                                            <span class="ml-auto text-[10px] font-mono text-slate-400 flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3"></i> Pubblico</span>
+                                        </div>
                                     </div>
+
+                                    <!-- Post Attachment Image -->
+                                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                                        <img src="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&h=400&fit=crop&auto=format" alt="Mareggiata coste tirreniche" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-500">
+                                        <div class="bg-slate-50 px-3 py-2 border-t border-slate-200 flex items-center gap-2 text-[11px] text-slate-400">
+                                            <i data-lucide="image" class="w-3 h-3"></i>
+                                            <span>Immagine allegata al post Facebook</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- NLP Analysis Result -->
+                                    <div class="mt-3 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 shadow-sm">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <div class="bg-alert-medium text-white p-1.5 rounded-md shadow-sm">
+                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                            </div>
+                                            <span class="text-[11px] font-bold text-alert-medium uppercase tracking-wider">Analisi IA</span>
+                                            <span class="ml-auto text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">conf: 91.7%</span>
+                                        </div>
+                                        <p class="text-sm font-medium text-slate-800 mb-3 leading-relaxed">Maltempo al Centro-Sud con venti di burrasca e mareggiate lungo le coste tirreniche.</p>
+                                        <div class="flex flex-wrap gap-1.5 mb-3">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[11px] font-semibold border border-amber-200">
+                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Seguire aggiornamenti ufficiali
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[11px] font-semibold border border-amber-200">
+                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Evitare zone costiere esposte
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                                            <i data-lucide="map-pin" class="w-3 h-3 text-amber-500"></i>
+                                            <span class="font-medium">Luoghi citati:</span>
+                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">Centro-Sud</span>
+                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">Coste tirreniche</span>
+                                        </div>
+                                    </div>
+
                                     <div class="flex flex-wrap gap-3">
                                         <button onclick="monitoraEvoluzione(this)" data-active="false" class="px-5 py-2.5 bg-brand hover:bg-brand-light text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 active:scale-95 shadow-sm">
                                             <i data-lucide="eye" class="w-4 h-4"></i> <span>Monitora Evoluzione</span>
@@ -342,8 +455,8 @@
                         <div id="alert-3" class="p-6 hover:bg-slate-50/50 transition-colors relative border-l-4 border-alert-info opacity-90 hover:opacity-100">
                             <div class="absolute left-0 top-0 bottom-0 w-1 bg-alert-info"></div>
                             <div class="flex items-start gap-5">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex-shrink-0 flex items-center justify-center text-blue-600 shadow-sm relative grayscale-[20%]">
-                                    <i data-lucide="facebook" class="w-6 h-6"></i>
+                                <div class="w-12 h-12 rounded-full bg-blue-50 border-2 border-blue-200 flex-shrink-0 overflow-hidden shadow-sm relative">
+                                    <img src="https://ui-avatars.com/api/?name=Comune+MI&background=1976D2&color=fff&size=96&bold=true&font-size=0.35" alt="Comune di Milano" class="w-full h-full object-cover">
                                     <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 border border-slate-200">
                                         <i data-lucide="info" class="w-3 h-3 text-blue-500"></i>
                                     </div>
@@ -352,8 +465,9 @@
                                     <div class="flex flex-col xl:flex-row xl:justify-between xl:items-start mb-2 gap-2">
                                         <div>
                                             <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors">Comune di Milano</h4>
+                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors">Pagina: Comune di Milano - Ufficiale</h4>
                                                 <i data-lucide="badge-check" class="w-4 h-4 text-blue-500 -ml-1"></i>
+                                                <span class="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Pagina Facebook Pubblica</span>
                                                 <span class="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-100 px-2 py-0.5 rounded">
                                                     <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Ieri, 09:00
                                                 </span>
@@ -373,7 +487,40 @@
                                         <p class="text-slate-700">
                                             Continuano i lavori per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.
                                         </p>
+                                        <div class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 font-medium">
+                                            <span class="flex items-center gap-1">👍 58 Like</span>
+                                            <span class="flex items-center gap-1">💬 12 Commenti</span>
+                                            <span class="flex items-center gap-1">↗️ 5 Condivisioni</span>
+                                            <span class="ml-auto text-[10px] font-mono text-slate-400 flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3"></i> Pubblico</span>
+                                        </div>
                                     </div>
+
+                                    <!-- Post Attachment Image -->
+                                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                                        <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&h=400&fit=crop&auto=format" alt="Cantieri stradali Milano" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-500">
+                                        <div class="bg-slate-50 px-3 py-2 border-t border-slate-200 flex items-center gap-2 text-[11px] text-slate-400">
+                                            <i data-lucide="image" class="w-3 h-3"></i>
+                                            <span>Immagine allegata al post Facebook</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- NLP Analysis Result -->
+                                    <div class="mt-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-slate-50 border border-blue-200/60 shadow-sm">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <div class="bg-alert-info text-white p-1.5 rounded-md shadow-sm">
+                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                            </div>
+                                            <span class="text-[11px] font-bold text-alert-info uppercase tracking-wider">Analisi IA</span>
+                                            <span class="ml-auto text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">conf: 95.4%</span>
+                                        </div>
+                                        <p class="text-sm font-medium text-slate-800 mb-3 leading-relaxed">Lavori in corso per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.</p>
+                                        <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                                            <i data-lucide="map-pin" class="w-3 h-3 text-blue-400"></i>
+                                            <span class="font-medium">Luoghi citati:</span>
+                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">San Babila, Milano</span>
+                                        </div>
+                                    </div>
+
                                     <div class="flex flex-wrap gap-3">
                                         <button onclick="dismissAlert('alert-3')" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-500 hover:bg-slate-100 hover:text-slate-700 hover:border-slate-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 active:scale-95 shadow-sm">
                                             <i data-lucide="x" class="w-4 h-4"></i> Ignora / Rimuovi
@@ -392,7 +539,7 @@
                         Meta App Review Compliance Standard Met
                     </div>
                     <p class="text-[11px] text-slate-400 max-w-lg mt-1 leading-relaxed">
-                        Sistema connesso in modo sicuro tramite le <strong>Graph API v18.0</strong> di Meta. I dati mostrati si riferiscono a <strong>Pagine Pubbliche</strong> e rispettano rigorosamente le policy di Data Privacy governative.
+                        Sistema connesso in modo sicuro tramite le <strong>Graph API v20.0</strong> di Meta. I dati mostrati si riferiscono a <strong>Pagine Pubbliche</strong> e rispettano rigorosamente le policy di Data Privacy governative.
                     </p>
                 </div>
                 
@@ -417,7 +564,7 @@
             </div>
             <div class="p-0 bg-slate-900 overflow-x-auto">
                 <div class="px-4 py-2 border-b border-slate-700 flex justify-between items-center text-xs text-slate-400 font-mono">
-                    <span>GET /v18.0/{page-id}/feed</span>
+                    <span>GET /v20.0/{page-id}/feed</span>
                     <span class="text-green-400">200 OK</span>
                 </div>
                 <pre id="raw-json-content" class="text-green-300 font-mono text-sm p-6 overflow-x-auto"></pre>
@@ -437,6 +584,44 @@
     <script>
         // Init icons
         lucide.createIcons();
+
+        // Initialize Leaflet Map
+        const map = L.map('alert-map', { zoomControl: false }).setView([42.0, 12.5], 5.5);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Custom marker icons by severity
+        function createMarker(color) {
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background:${color};width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px ${color}88;"></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+        }
+
+        // Alert markers
+        const redIcon = createMarker('#D32F2F');
+        const yellowIcon = createMarker('#F57C00');
+        const blueIcon = createMarker('#1976D2');
+
+        L.marker([44.4056, 8.9463], { icon: redIcon })
+            .addTo(map)
+            .bindPopup('<div style="font-family:Inter,sans-serif"><strong style="color:#D32F2F">ALLERTA ROSSA</strong><br>Protezione Civile Liguria<br><em>Rischio Idrogeologico</em></div>');
+
+        L.marker([40.8518, 14.2681], { icon: yellowIcon })
+            .addTo(map)
+            .bindPopup('<div style="font-family:Inter,sans-serif"><strong style="color:#F57C00">ALLERTA GIALLA</strong><br>Protezione Civile Campania<br><em>Vento Forte</em></div>');
+
+        L.marker([45.4642, 9.1900], { icon: blueIcon })
+            .addTo(map)
+            .bindPopup('<div style="font-family:Inter,sans-serif"><strong style="color:#1976D2">INFORMATIVO</strong><br>Comune di Milano<br><em>Viabilità - Lavori in corso</em></div>');
+
+        // Pulsing circle for red alert
+        L.circle([44.4056, 8.9463], { radius: 30000, color: '#D32F2F', fillColor: '#D32F2F', fillOpacity: 0.12, weight: 2 }).addTo(map);
 
         // App state
         let alertCount = 3;
@@ -580,23 +765,84 @@
             '101584736284': {
                 "id": "101584736284_101584736284",
                 "from": {
-                    "name": "Comune di Genova - Pagina Ufficiale",
+                    "name": "Protezione Civile Regione Liguria",
                     "id": "1015847360000"
                 },
                 "message": "AVVISO ALLA CITTADINANZA: Diramata allerta meteo ROSSA per piogge diffuse e temporali forti a partire dalle ore 18:00 di oggi. Scuole chiuse nella giornata di domani. Evitare gli spostamenti non necessari.",
                 "created_time": new Date().toISOString(),
                 "permalink_url": "https://www.facebook.com/1015847360000/posts/101584736284",
+                "likes": { "summary": { "total_count": 312 } },
+                "comments": { "summary": { "total_count": 47 } },
+                "shares": { "count": 89 },
                 "__internal_nlp_analysis__": {
+                    "is_emergency": true,
+                    "severity_level": "ROSSA",
+                    "event_type": "Meteo / Idrogeologico",
+                    "summary": "Allerta meteo rossa dalle 18:00 per piogge forti. Chiusura scuole per domani.",
+                    "key_instructions": [
+                        "Evitare spostamenti non necessari",
+                        "Non sostare nei pressi di corsi d'acqua"
+                    ],
+                    "locations_mentioned": [
+                        "Genova",
+                        "fiume Polcevera"
+                    ],
                     "status": "PROCESSED",
-                    "threat_level": "RED (CRITICAL)",
-                    "category": "HYDROGEOLOGICAL_ALERT",
-                    "confidence_score": 0.982,
-                    "extracted_entities": [
-                        {"type": "LOCATION", "value": "Genova"},
-                        {"type": "DATETIME", "value": "Oggi 18:00"},
-                        {"type": "DATETIME", "value": "Domani"},
-                        {"type": "ACTION", "value": "Scuole chiuse"}
-                    ]
+                    "confidence_score": 0.982
+                }
+            },
+            '101584736285': {
+                "id": "101584736285_101584736285",
+                "from": {
+                    "name": "Protezione Civile Regione Campania",
+                    "id": "1015847360001"
+                },
+                "message": "Maltempo in arrivo al Centro-Sud. Venti di burrasca e mareggiate lungo le coste tirreniche. Segui gli aggiornamenti sul nostro sito.",
+                "created_time": new Date().toISOString(),
+                "permalink_url": "https://www.facebook.com/1015847360001/posts/101584736285",
+                "likes": { "summary": { "total_count": 145 } },
+                "comments": { "summary": { "total_count": 32 } },
+                "shares": { "count": 56 },
+                "__internal_nlp_analysis__": {
+                    "is_emergency": true,
+                    "severity_level": "GIALLA",
+                    "event_type": "Meteo",
+                    "summary": "Maltempo al Centro-Sud con venti di burrasca e mareggiate lungo le coste tirreniche.",
+                    "key_instructions": [
+                        "Seguire aggiornamenti ufficiali",
+                        "Evitare zone costiere esposte"
+                    ],
+                    "locations_mentioned": [
+                        "Centro-Sud",
+                        "Coste tirreniche"
+                    ],
+                    "status": "PROCESSED",
+                    "confidence_score": 0.917
+                }
+            },
+            '101584736286': {
+                "id": "101584736286_101584736286",
+                "from": {
+                    "name": "Comune di Milano - Ufficiale",
+                    "id": "1015847360002"
+                },
+                "message": "Continuano i lavori per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.",
+                "created_time": new Date().toISOString(),
+                "permalink_url": "https://www.facebook.com/1015847360002/posts/101584736286",
+                "likes": { "summary": { "total_count": 58 } },
+                "comments": { "summary": { "total_count": 12 } },
+                "shares": { "count": 5 },
+                "__internal_nlp_analysis__": {
+                    "is_emergency": false,
+                    "severity_level": "VERDE",
+                    "event_type": null,
+                    "summary": "Lavori in corso per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.",
+                    "key_instructions": [],
+                    "locations_mentioned": [
+                        "San Babila, Milano"
+                    ],
+                    "status": "PROCESSED",
+                    "confidence_score": 0.954
                 }
             }
         };
