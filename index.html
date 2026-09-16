@@ -1,887 +1,621 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASE - Osservatorio del Cittadino | Dashboard</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Icons (Lucide) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Leaflet Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            DEFAULT: '#003366',
-                            light: '#004c99',
-                            dark: '#001933',
-                        },
-                        bg: '#F4F6F9',
-                        alert: {
-                            high: '#D32F2F',
-                            medium: '#F57C00',
-                            info: '#1976D2',
-                            highBg: '#fef2f2',
-                            mediumBg: '#fff7ed',
-                            infoBg: '#eff6ff',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
-                        'card': '0 2px 10px rgba(0, 0, 0, 0.02)',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #F4F6F9; }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Interactive animations */
-        .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASE - Osservatorio del Cittadino</title>
+<style>
+  :root {
+    --sidebar: #0f1e33;
+    --sidebar-active: #16304f;
+    --bg: #f4f6f9;
+    --panel: #ffffff;
+    --border: #e6e9ef;
+    --text: #1a2233;
+    --text-dim: #6b7385;
+    --text-faint: #98a0b0;
+    --blue: #1d5fd6;
+    --blue-dark: #0f2a52;
+    --red: #d92d3d;
+    --red-dark: #b8202f;
+    --yellow: #e07b0a;
+    --green: #1f9d55;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    min-height: 100vh;
+  }
 
-        /* Dynamic UI Animations for Meta Video */
-        .toast-enter { animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
-        @keyframes slideIn { 
-            0% { transform: scale(0.9) translateY(20px); opacity: 0; } 
-            100% { transform: scale(1) translateY(0); opacity: 1; } 
-        }
-        @keyframes fadeOut { to { opacity: 0; transform: scale(0.95); } }
-        
-        .fade-out-card { animation: removeCard 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; overflow: hidden; }
-        @keyframes removeCard { 
-            0% { opacity: 1; transform: scale(1); max-height: 500px; } 
-            50% { opacity: 0; transform: scale(0.95); max-height: 500px; }
-            100% { opacity: 0; transform: scale(0.90); max-height: 0; padding: 0; margin: 0; border: none; }
-        }
-    </style>
+  /* Sidebar */
+  aside {
+    width: 210px;
+    background: var(--sidebar);
+    color: #cbd5e6;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 14px;
+    flex-shrink: 0;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px 22px;
+  }
+  .logo .mark {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #1d5fd6, #0f2a52);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px;
+  }
+  .logo .name { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .logo .sub { font-size: 9.5px; letter-spacing: 0.4px; color: #7f8ba3; font-weight: 600; }
+
+  nav.side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  nav.side-nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #a9b4c9;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  nav.side-nav a.active {
+    background: var(--sidebar-active);
+    color: #fff;
+    font-weight: 700;
+  }
+  nav.side-nav a .ico { width: 16px; text-align: center; font-size: 13px; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 11.5px;
+  }
+  .sidebar-footer .label { color: #8b96ab; margin-bottom: 6px; }
+  .sidebar-footer .status { display: flex; align-items: center; gap: 7px; color: #fff; font-weight: 600; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(31,157,85,0.25); }
+
+  /* Main */
+  main { flex: 1; min-width: 0; }
+
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  header.topbar h1 { font-size: 19px; margin: 0 0 6px; }
+  .engine-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-dim);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 18px; }
+  .bell { font-size: 16px; color: var(--text-faint); }
+  .operator { display: flex; align-items: center; gap: 10px; }
+  .operator .info { font-size: 12px; text-align: right; line-height: 1.3; }
+  .operator .info .name { font-weight: 700; color: var(--text); }
+  .operator .info .role { color: var(--text-faint); font-size: 10.5px; letter-spacing: 0.3px; }
+  .operator .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--blue-dark);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+
+  .content { padding: 6px 28px 50px; max-width: 1280px; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 800px) { .stat-row { grid-template-columns: 1fr; } }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card .icon-badge {
+    width: 34px; height: 34px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; margin-bottom: 14px;
+  }
+  .stat-card:nth-child(1) .icon-badge { background: #e8f0fe; color: var(--blue); }
+  .stat-card:nth-child(2) .icon-badge { background: #eef1f7; color: #475269; }
+  .stat-card:nth-child(3) .icon-badge { background: #fdeaec; color: var(--red); }
+  .stat-card .delta {
+    position: absolute; top: 18px; right: 20px;
+    font-size: 11px; font-weight: 700;
+  }
+  .delta.up { color: var(--green); }
+  .delta.flag {
+    background: var(--red); color: #fff;
+    padding: 3px 8px; border-radius: 5px;
+    font-size: 9.5px; letter-spacing: 0.3px;
+  }
+  .stat-card .label { font-size: 12.5px; color: var(--text-dim); margin-bottom: 4px; }
+  .stat-card .value { font-size: 27px; font-weight: 800; line-height: 1; }
+  .stat-card .value .unit { font-size: 12px; font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+
+  .feed-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .feed-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; gap: 10px;
+  }
+  .feed-head h2 { font-size: 15px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .feed-head h2::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--blue); display: inline-block; }
+  .feed-head .note { font-size: 12px; color: var(--text-faint); }
+  .feed-actions { display: flex; gap: 8px; }
+  .btn-outline {
+    font-size: 12px; padding: 7px 13px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--panel);
+    color: var(--text-dim); cursor: pointer;
+  }
+  .btn-outline.solid { background: var(--blue-dark); color: #fff; border-color: var(--blue-dark); }
+  .btn-outline.solid .refresh-ico { display: inline-block; transition: transform 0.2s; }
+  .btn-outline.solid.spinning .refresh-ico { animation: spin 0.8s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: #1a2233; color: #fff;
+    padding: 12px 18px; border-radius: 9px;
+    font-size: 12.5px;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transform: translateY(20px); opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    z-index: 200;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast .ok-dot { color: #35d488; font-weight: 700; }
+
+  .feed-list { padding: 16px; display: flex; flex-direction: column; gap: 0; }
+
+  .alert-item {
+    position: relative;
+    padding: 16px 16px 16px 20px;
+    border-left: 4px solid var(--border);
+    margin-bottom: 14px;
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+  }
+  .alert-item.sev-red { border-left-color: var(--red); }
+  .alert-item.sev-yellow { border-left-color: var(--yellow); }
+  .alert-item.sev-blue { border-left-color: var(--blue); }
+  .alert-item.dismissed { opacity: 0; max-height: 0; padding: 0 16px; margin: 0; overflow: hidden; border: none; }
+
+  .alert-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .ig-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    background: #e4e8ef;
+  }
+  .alert-meta { flex: 1; min-width: 0; }
+  .alert-meta .account { font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+  .alert-meta .account .verified { color: var(--blue); font-size: 12px; }
+  .alert-meta .time { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .id-tag {
+    font-size: 10px; color: var(--text-faint); font-family: var(--mono);
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 3px 8px; border-radius: 5px; flex-shrink: 0;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 700; padding: 4px 9px;
+    border-radius: 6px; margin-bottom: 10px;
+  }
+  .badge.red { background: #fdeaec; color: var(--red-dark); }
+  .badge.yellow { background: #fdf1e2; color: var(--yellow); }
+  .badge.blue { background: #e8f0fe; color: var(--blue); }
+
+  .extract-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 11px 13px;
+    margin-bottom: 12px;
+  }
+  .extract-box .extract-label {
+    font-size: 10px; font-weight: 700; color: var(--text-faint);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+  }
+  .extract-box .body { font-size: 13px; line-height: 1.55; color: var(--text); }
+  .extract-box mark { background: #fdf1c0; color: inherit; padding: 0 2px; border-radius: 3px; }
+
+  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .card-actions button {
+    font-size: 12px; padding: 8px 14px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--panel);
+    color: var(--text-dim); cursor: pointer; font-weight: 600;
+  }
+  .card-actions button.escalate { background: var(--red); color: #fff; border-color: var(--red); }
+  .card-actions button.monitor { background: var(--blue-dark); color: #fff; border-color: var(--blue-dark); }
+
+  .compliance-strip {
+    margin: 20px 16px 0;
+    padding: 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .compliance-strip .head {
+    display: flex; align-items: center; gap: 7px;
+    font-weight: 700; color: var(--green); margin-bottom: 6px; font-size: 12px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,14,22,0.6);
+    align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #0c1420;
+    color: #d7e0ef;
+    width: 100%; max-width: 640px;
+    max-height: 82vh;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px; font-weight: 700;
+  }
+  .modal-head .close { cursor: pointer; color: #8a93a8; font-size: 16px; background: none; border: none; }
+  .modal-req {
+    display: flex; justify-content: space-between;
+    padding: 10px 18px;
+    font-family: var(--mono); font-size: 11px;
+    color: #7d8aa3;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .modal-req .ok { color: #35d488; }
+  .modal-body {
+    padding: 16px 18px;
+    overflow: auto;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.7;
+    white-space: pre;
+  }
+  .modal-body .k { color: #6fb8ff; }
+  .modal-body .s { color: #ffb454; }
+  .modal-body .n { color: #35d488; }
+  .modal-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 11px; color: #7d8aa3;
+  }
+  .modal-foot button {
+    background: #1d5fd6; color: #fff; border: none;
+    padding: 8px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+</style>
 </head>
-<body class="text-slate-800 h-screen flex overflow-hidden antialiased font-sans">
+<body>
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-brand text-white flex flex-col shadow-xl z-20">
-        <div class="p-6 border-b border-brand-light flex items-center gap-3">
-            <div class="bg-white p-2 rounded-xl shadow-sm">
-                <i data-lucide="shield-check" class="w-8 h-8 text-brand"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-lg tracking-tight leading-none">MASE</h1>
-                <p class="text-[10px] text-blue-200 uppercase tracking-wider mt-1.5 font-medium opacity-90">Osservatorio Cittadino</p>
-            </div>
+<aside>
+  <div class="logo">
+    <div class="mark">🛡️</div>
+    <div>
+      <div class="name">MASE</div>
+      <div class="sub">OSSERVATORIO CITTADINO</div>
+    </div>
+  </div>
+  <nav class="side-nav">
+    <a href="#" class="active"><span class="ico">▦</span> Dashboard Emergenze</a>
+    <a href="#"><span class="ico">📷</span> Sorgenti Instagram</a>
+    <a href="#"><span class="ico">🗂</span> Archivio Storico</a>
+    <a href="#"><span class="ico">⚙</span> Impostazioni API</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="label">Stato Connessione</div>
+    <div class="status"><span class="dot"></span> API Meta Attive</div>
+  </div>
+</aside>
+
+<main>
+  <header class="topbar">
+    <div>
+      <h1>Centro Operativo: Monitoraggio Fonti Social</h1>
+      <span class="engine-badge">⚙ NLP Engine v2.4 &nbsp;·&nbsp; Real-time analysis stream</span>
+    </div>
+    <div class="topbar-right">
+      <span class="bell">🔔</span>
+      <div class="operator">
+        <div class="info">
+          <div class="name">Operatore Turno A</div>
+          <div class="role">PROTEZIONE CIVILE</div>
         </div>
-        
-        <nav class="flex-1 py-6 px-4 space-y-2">
-            <a href="#" class="flex items-center gap-3 bg-brand-light/50 px-4 py-3 rounded-xl text-sm font-medium border border-blue-400/20 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400/50">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 text-blue-300"></i>
-                Dashboard Emergenze
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-brand-light/30 px-4 py-3 rounded-xl text-sm font-medium transition-all text-blue-100 hover:text-white group relative">
-                <i data-lucide="facebook" class="w-5 h-5 opacity-70 group-hover:opacity-100 group-hover:text-blue-400 transition-colors"></i>
-                Sorgenti Facebook
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-brand-light/30 px-4 py-3 rounded-xl text-sm font-medium transition-all text-blue-100 hover:text-white group">
-                <i data-lucide="archive" class="w-5 h-5 opacity-70 group-hover:opacity-100 group-hover:text-amber-400 transition-colors"></i>
-                Archivio Storico
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-brand-light/30 px-4 py-3 rounded-xl text-sm font-medium transition-all text-blue-100 hover:text-white group">
-                <i data-lucide="settings" class="w-5 h-5 opacity-70 group-hover:opacity-100 group-hover:text-gray-300 transition-colors"></i>
-                Impostazioni API
-            </a>
-        </nav>
-        
-        <div class="p-4 m-4 rounded-xl bg-gradient-to-br from-brand-light to-brand-dark border border-blue-500/30 relative overflow-hidden">
-            <!-- Decorative circle -->
-            <div class="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-white/5"></div>
-            
-            <p class="text-xs text-blue-200 mb-2.5 font-medium">Stato Connessione</p>
-            <div class="flex items-center gap-2 bg-black/20 p-2 rounded-lg border border-white/5">
-                <span class="relative flex h-2.5 w-2.5">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
-                </span>
-                <span class="text-[13px] font-semibold text-green-50">API Meta Attive</span>
-            </div>
-        </div>
-    </aside>
+        <div class="avatar">OA</div>
+      </div>
+    </div>
+  </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-bg relative">
-        
-        <!-- Header -->
-        <header class="bg-white px-8 py-5 flex justify-between items-center z-10 border-b border-slate-200/80 sticky top-0 shadow-sm backdrop-blur-sm bg-white/95">
-            <div>
-                <h2 class="text-xl font-bold tracking-tight text-slate-800">Centro Operativo: Monitoraggio Fonti Social</h2>
-                <p class="text-xs text-slate-500 mt-1.5 flex items-center gap-2 font-medium">
-                    <span class="bg-slate-100 border border-slate-200 text-slate-600 px-2 py-0.5 rounded flex items-center gap-1.5 cursor-pointer hover:bg-slate-200 transition-colors" onclick="showToast('NLP Engine v2.4 in esecuzione. Latenza API: 124ms', 'info')">
-                        <i data-lucide="cpu" class="w-3 h-3 text-brand"></i>
-                        NLP Engine v2.4
-                    </span>
-                    Real-time analysis stream
-                </p>
-            </div>
-            
-            <div class="flex items-center gap-6">
-                <!-- Notifications -->
-                <button onclick="showToast('Nessuna nuova notifica di sistema', 'info')" class="relative p-2.5 text-slate-400 hover:text-brand transition-colors rounded-full hover:bg-slate-100 group">
-                    <i data-lucide="bell" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-alert-high rounded-full border-2 border-white animate-pulse"></span>
-                </button>
-                
-                <!-- Separator -->
-                <div class="w-px h-8 bg-slate-200"></div>
-                
-                <!-- Profile -->
-                <div class="flex items-center gap-3 cursor-pointer group" onclick="showToast('Menu profilo operatore aperto', 'info')">
-                    <div class="text-right">
-                        <p class="text-sm font-semibold text-slate-800 group-hover:text-brand transition-colors">Operatore Turno A</p>
-                        <p class="text-[11px] font-medium text-slate-500 uppercase tracking-wide mt-0.5">Protezione Civile</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-brand-light text-white flex items-center justify-center font-bold shadow-md ring-2 ring-white group-hover:ring-brand/20 transition-all">
-                        OA
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Dashboard Content -->
-        <div class="flex-1 overflow-auto p-8 relative">
-            <div class="absolute inset-0 z-0 opacity-[0.02]" style="background-image: radial-gradient(#003366 1px, transparent 1px); background-size: 24px 24px;"></div>
-            
-            <div class="relative z-10 max-w-7xl mx-auto">
-                <!-- KPIs -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- KPI 1 -->
-                    <div class="bg-white rounded-2xl p-6 shadow-card border border-slate-100 hover-lift group">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-blue-50 text-brand rounded-xl border border-blue-100 group-hover:scale-110 transition-transform">
-                                <i data-lucide="radio-tower" class="w-6 h-6"></i>
-                            </div>
-                            <span class="bg-green-50/80 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-green-200 cursor-pointer" onclick="showToast('Le pagine monitorate includono: Comuni (60%), Protezione Civile (30%), Enti Locali (10%)', 'info')">
-                                <i data-lucide="trending-up" class="w-3 h-3"></i> +12%
-                            </span>
-                        </div>
-                        <p class="text-slate-500 text-sm font-medium mb-1">Pagine FB Monitorate</p>
-                        <div class="flex items-end gap-2">
-                            <h3 class="text-3xl font-bold text-slate-800 tracking-tight">142</h3>
-                            <span class="text-xs text-slate-400 mb-1.5">attive ora</span>
-                        </div>
-                    </div>
-                    
-                    <!-- KPI 2 -->
-                    <div class="bg-white rounded-2xl p-6 shadow-card border border-slate-100 hover-lift group">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 group-hover:scale-110 transition-transform">
-                                <i data-lucide="file-text" class="w-6 h-6"></i>
-                            </div>
-                            <span class="bg-green-50/80 text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-green-200">
-                                <i data-lucide="trending-up" class="w-3 h-3"></i> +5.4%
-                            </span>
-                        </div>
-                        <p class="text-slate-500 text-sm font-medium mb-1">Post Analizzati (ultime 24h)</p>
-                        <h3 class="text-3xl font-bold text-slate-800 tracking-tight">1.054</h3>
-                    </div>
-                    
-                    <!-- KPI 3 -->
-                    <div class="bg-white rounded-2xl p-6 shadow-card border border-alert-high/20 hover-lift relative overflow-hidden group">
-                        <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-alert-high/[0.03] rounded-full z-0 group-hover:scale-125 transition-transform duration-500"></div>
-                        <div class="relative z-10">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="p-3 bg-alert-highBg text-alert-high rounded-xl border border-alert-high/20">
-                                    <i data-lucide="triangle-alert" class="w-6 h-6"></i>
-                                </div>
-                                <span class="bg-alert-high text-white shadow-[0_0_10px_rgba(211,47,47,0.3)] animate-pulse text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                                    AZIONE RICHIESTA
-                                </span>
-                            </div>
-                            <p class="text-slate-600 text-sm font-medium mb-1">Allerte IA Rilevate</p>
-                            <h3 id="alert-counter" class="text-3xl font-bold text-alert-high tracking-tight transition-all">3</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Alert Map -->
-                <div class="bg-white rounded-2xl shadow-soft border border-slate-200 mb-8 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="map" class="w-5 h-5 text-brand"></i>
-                            <h3 class="text-lg font-bold text-slate-800">Mappa Allerte Nazionali</h3>
-                        </div>
-                        <div class="flex items-center gap-3 text-[11px] font-semibold">
-                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow-sm"></span> Rossa</span>
-                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-sm"></span> Gialla</span>
-                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block shadow-sm"></span> Informativo</span>
-                        </div>
-                    </div>
-                    <div id="alert-map" class="h-72 w-full z-0"></div>
-                </div>
-
-                <!-- Main Feed Component -->
-                <div class="bg-white rounded-2xl shadow-soft border border-slate-200 flex flex-col">
-                    <!-- Feed Header -->
-                    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 rounded-t-2xl">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <span class="relative flex h-2 w-2 mr-1">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
-                                    <span id="live-indicator" class="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
-                                </span>
-                                Feed Allerte in Tempo Reale
-                            </h3>
-                            <div class="flex items-center gap-2 mt-2 flex-wrap">
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600 text-white text-[11px] font-bold uppercase tracking-wide shadow-md shadow-blue-500/20 border border-blue-500">
-                                    <i data-lucide="facebook" class="w-3.5 h-3.5"></i> Fonte Dati: Graph API - Facebook Public Pages
-                                </span>
-                                <span class="text-xs text-slate-400 font-medium">Dati estratti via Meta Graph API e classificati da modello NLP.</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="showToast('Menu filtri attivato', 'info')" class="flex-1 sm:flex-none justify-center px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-colors shadow-sm focus:ring-2 focus:ring-slate-200 focus:outline-none">
-                                <i data-lucide="list-filter" class="w-4 h-4 text-slate-400"></i> Filtra
-                            </button>
-                            <button onclick="refreshFeed(this)" class="flex-1 sm:flex-none justify-center px-4 py-2 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-light flex items-center gap-2 shadow-sm transition-colors focus:ring-2 focus:ring-brand/50 focus:outline-none">
-                                <span id="refresh-icon"><i data-lucide="refresh-ccw" class="w-4 h-4"></i></span> Aggiorna
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Feed Items -->
-                    <div class="divide-y divide-slate-100 flex-1">
-                        
-                        <!-- Alert Item 1 (High Risk) -->
-                        <div id="alert-1" class="p-6 hover:bg-slate-50/50 transition-colors relative border-l-4 border-alert-high">
-                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-alert-high rounded-l-2xl"></div>
-                            <div class="flex items-start gap-5">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 border-2 border-blue-200 flex-shrink-0 overflow-hidden shadow-sm relative">
-                                    <img src="https://ui-avatars.com/api/?name=PC+Liguria&background=D32F2F&color=fff&size=96&bold=true&font-size=0.35" alt="PC Liguria" class="w-full h-full object-cover">
-                                    <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 border border-slate-200 cursor-pointer" onclick="showToast('AI Model: Geoverse-Emergency-Net v2', 'info')">
-                                        <i data-lucide="zap" class="w-3 h-3 text-amber-500 fill-amber-500"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex flex-col xl:flex-row xl:justify-between xl:items-start mb-2 gap-2">
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors" onclick="window.open('https://facebook.com')">Pagina: Protezione Civile Regione Liguria</h4>
-                                                <i data-lucide="badge-check" class="w-4 h-4 text-blue-500 -ml-1"></i>
-                                                <span class="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Pagina Facebook Pubblica</span>
-                                                <span class="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-100 px-2 py-0.5 rounded">
-                                                    <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Oggi, 14:30
-                                                </span>
-                                            </div>
-                                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-alert-highBg text-alert-high text-[11px] font-bold uppercase tracking-wide border border-alert-high/20 shadow-sm">
-                                                <i data-lucide="siren" class="w-3.5 h-3.5"></i> Allerta Rossa - Rischio Idrogeologico
-                                            </div>
-                                        </div>
-                                        <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200 flex items-center gap-1.5 xl:self-start">
-                                            <i data-lucide="database" class="w-2.5 h-2.5"></i> ID: 101584736284
-                                        </div>
-                                    </div>
-                                    <div class="text-slate-600 text-sm leading-relaxed mb-4 bg-white p-4 rounded-xl border border-slate-200 shadow-[0_2px_4px_rgba(0,0,0,0.01)] mt-3">
-                                        <div class="flex gap-2 mb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                            <i data-lucide="message-square" class="w-4 h-4"></i> Testo originale estratto
-                                        </div>
-                                        <p class="text-slate-700">
-                                            <span class="font-bold text-slate-900 bg-yellow-100 px-1 rounded">AVVISO ALLA CITTADINANZA:</span> Diramata allerta meteo ROSSA per piogge diffuse e temporali forti a partire dalle <span class="bg-yellow-100 px-1 rounded">ore 18:00</span> di oggi. Scuole chiuse nella giornata di <span class="bg-yellow-100 px-1 rounded">domani</span>. Evitare gli spostamenti non necessari.
-                                        </p>
-                                        <div class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 font-medium">
-                                            <span class="flex items-center gap-1">👍 312 Like</span>
-                                            <span class="flex items-center gap-1">💬 47 Commenti</span>
-                                            <span class="flex items-center gap-1">↗️ 89 Condivisioni</span>
-                                            <span class="ml-auto text-[10px] font-mono text-slate-400 flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3"></i> Pubblico</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Post Attachment Image -->
-                                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                                        <img src="https://images.unsplash.com/photo-1547683905-f686c993aae5?w=800&h=400&fit=crop&auto=format" alt="Alluvione Genova" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-500">
-                                        <div class="bg-slate-50 px-3 py-2 border-t border-slate-200 flex items-center gap-2 text-[11px] text-slate-400">
-                                            <i data-lucide="image" class="w-3 h-3"></i>
-                                            <span>Immagine allegata al post Facebook</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- NLP Analysis Result -->
-                                    <div class="mt-3 p-4 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 border border-red-200/60 shadow-sm">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <div class="bg-alert-high text-white p-1.5 rounded-md shadow-sm">
-                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                            </div>
-                                            <span class="text-[11px] font-bold text-alert-high uppercase tracking-wider">Analisi IA</span>
-                                            <span class="ml-auto text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">conf: 98.2%</span>
-                                        </div>
-                                        <p class="text-sm font-medium text-slate-800 mb-3 leading-relaxed">Allerta meteo rossa dalle 18:00 per piogge forti. Chiusura scuole per domani.</p>
-                                        <div class="flex flex-wrap gap-1.5 mb-3">
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-[11px] font-semibold border border-red-200">
-                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Evitare spostamenti non necessari
-                                            </span>
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-[11px] font-semibold border border-red-200">
-                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Non sostare nei pressi di corsi d'acqua
-                                            </span>
-                                        </div>
-                                        <div class="flex items-center gap-2 text-[11px] text-slate-500">
-                                            <i data-lucide="map-pin" class="w-3 h-3 text-red-400"></i>
-                                            <span class="font-medium">Luoghi citati:</span>
-                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">Genova</span>
-                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">fiume Polcevera</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-wrap gap-3">
-                                        <button onclick="escalaAlert('alert-1', this)" class="px-5 py-2.5 bg-alert-high hover:bg-[#b71c1c] text-white rounded-lg text-sm font-semibold transition-all shadow-md shadow-red-500/20 flex items-center gap-2 active:scale-95">
-                                            <i data-lucide="phone-call" class="w-4 h-4"></i> Escala a Protezione Civile
-                                        </button>
-                                        <button onclick="showRawData('101584736284')" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 hover:border-slate-400 active:scale-95 shadow-sm">
-                                            <i data-lucide="code" class="w-4 h-4 text-slate-400"></i> Dati Meta Raw (JSON)
-                                        </button>
-                                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 active:scale-95 shadow-sm">
-                                            <i data-lucide="external-link" class="w-4 h-4"></i> Post Originale
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Alert Item 2 (Medium Risk) -->
-                        <div id="alert-2" class="p-6 hover:bg-slate-50/50 transition-colors relative border-l-4 border-alert-medium">
-                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-alert-medium"></div>
-                            <div class="flex items-start gap-5">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 border-2 border-amber-200 flex-shrink-0 overflow-hidden shadow-sm relative">
-                                    <img src="https://ui-avatars.com/api/?name=PC+Campania&background=F57C00&color=fff&size=96&bold=true&font-size=0.35" alt="PC Campania" class="w-full h-full object-cover">
-                                    <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 border border-slate-200">
-                                        <i data-lucide="zap" class="w-3 h-3 text-amber-500 fill-amber-500"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex flex-col xl:flex-row xl:justify-between xl:items-start mb-2 gap-2">
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors">Pagina: Protezione Civile Regione Campania</h4>
-                                                <i data-lucide="badge-check" class="w-4 h-4 text-blue-500 -ml-1"></i>
-                                                <span class="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Pagina Facebook Pubblica</span>
-                                                <span class="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-100 px-2 py-0.5 rounded">
-                                                    <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Oggi, 13:15
-                                                </span>
-                                            </div>
-                                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-alert-mediumBg text-alert-medium text-[11px] font-bold uppercase tracking-wide border border-alert-medium/30 shadow-sm">
-                                                <i data-lucide="wind" class="w-3.5 h-3.5"></i> Allerta Gialla - Vento Forte
-                                            </div>
-                                        </div>
-                                        <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200 flex items-center gap-1.5 xl:self-start">
-                                            <i data-lucide="database" class="w-2.5 h-2.5"></i> ID: 101584736285
-                                        </div>
-                                    </div>
-                                    <div class="text-slate-600 text-sm leading-relaxed mb-4 bg-white p-4 rounded-xl border border-slate-200 shadow-[0_2px_4px_rgba(0,0,0,0.01)] mt-3">
-                                        <div class="flex gap-2 mb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                            <i data-lucide="message-square" class="w-4 h-4"></i> Testo originale
-                                        </div>
-                                        <p class="text-slate-700">
-                                            Maltempo in arrivo al <span class="bg-yellow-100 px-1 rounded">Centro-Sud</span>. Venti di burrasca e mareggiate lungo le coste tirreniche. Segui gli aggiornamenti sul nostro sito.
-                                        </p>
-                                        <div class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 font-medium">
-                                            <span class="flex items-center gap-1">👍 145 Like</span>
-                                            <span class="flex items-center gap-1">💬 32 Commenti</span>
-                                            <span class="flex items-center gap-1">↗️ 56 Condivisioni</span>
-                                            <span class="ml-auto text-[10px] font-mono text-slate-400 flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3"></i> Pubblico</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Post Attachment Image -->
-                                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                                        <img src="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&h=400&fit=crop&auto=format" alt="Mareggiata coste tirreniche" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-500">
-                                        <div class="bg-slate-50 px-3 py-2 border-t border-slate-200 flex items-center gap-2 text-[11px] text-slate-400">
-                                            <i data-lucide="image" class="w-3 h-3"></i>
-                                            <span>Immagine allegata al post Facebook</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- NLP Analysis Result -->
-                                    <div class="mt-3 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 shadow-sm">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <div class="bg-alert-medium text-white p-1.5 rounded-md shadow-sm">
-                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                            </div>
-                                            <span class="text-[11px] font-bold text-alert-medium uppercase tracking-wider">Analisi IA</span>
-                                            <span class="ml-auto text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">conf: 91.7%</span>
-                                        </div>
-                                        <p class="text-sm font-medium text-slate-800 mb-3 leading-relaxed">Maltempo al Centro-Sud con venti di burrasca e mareggiate lungo le coste tirreniche.</p>
-                                        <div class="flex flex-wrap gap-1.5 mb-3">
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[11px] font-semibold border border-amber-200">
-                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Seguire aggiornamenti ufficiali
-                                            </span>
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[11px] font-semibold border border-amber-200">
-                                                <i data-lucide="alert-triangle" class="w-3 h-3"></i> Evitare zone costiere esposte
-                                            </span>
-                                        </div>
-                                        <div class="flex items-center gap-2 text-[11px] text-slate-500">
-                                            <i data-lucide="map-pin" class="w-3 h-3 text-amber-500"></i>
-                                            <span class="font-medium">Luoghi citati:</span>
-                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">Centro-Sud</span>
-                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">Coste tirreniche</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-wrap gap-3">
-                                        <button onclick="monitoraEvoluzione(this)" data-active="false" class="px-5 py-2.5 bg-brand hover:bg-brand-light text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 active:scale-95 shadow-sm">
-                                            <i data-lucide="eye" class="w-4 h-4"></i> <span>Monitora Evoluzione</span>
-                                        </button>
-                                        <button onclick="dismissAlert('alert-2')" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-slate-800 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 active:scale-95 shadow-sm">
-                                            <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i> Risolto / Archivio
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Alert Item 3 (Info) -->
-                        <div id="alert-3" class="p-6 hover:bg-slate-50/50 transition-colors relative border-l-4 border-alert-info opacity-90 hover:opacity-100">
-                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-alert-info"></div>
-                            <div class="flex items-start gap-5">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 border-2 border-blue-200 flex-shrink-0 overflow-hidden shadow-sm relative">
-                                    <img src="https://ui-avatars.com/api/?name=Comune+MI&background=1976D2&color=fff&size=96&bold=true&font-size=0.35" alt="Comune di Milano" class="w-full h-full object-cover">
-                                    <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 border border-slate-200">
-                                        <i data-lucide="info" class="w-3 h-3 text-blue-500"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex flex-col xl:flex-row xl:justify-between xl:items-start mb-2 gap-2">
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                <h4 class="font-bold text-slate-800 text-[15px] hover:text-brand cursor-pointer transition-colors">Pagina: Comune di Milano - Ufficiale</h4>
-                                                <i data-lucide="badge-check" class="w-4 h-4 text-blue-500 -ml-1"></i>
-                                                <span class="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">Pagina Facebook Pubblica</span>
-                                                <span class="text-xs text-slate-500 flex items-center gap-1 font-medium bg-slate-100 px-2 py-0.5 rounded">
-                                                    <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Ieri, 09:00
-                                                </span>
-                                            </div>
-                                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-alert-infoBg text-alert-info text-[11px] font-bold uppercase tracking-wide border border-alert-info/30 shadow-sm">
-                                                <i data-lucide="info" class="w-3.5 h-3.5"></i> Informativo - Nessun Rischio
-                                            </div>
-                                        </div>
-                                        <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200 flex items-center gap-1.5 xl:self-start">
-                                            <i data-lucide="database" class="w-2.5 h-2.5"></i> ID: 101584736286
-                                        </div>
-                                    </div>
-                                    <div class="text-slate-600 text-sm leading-relaxed mb-4 bg-white p-4 rounded-xl border border-slate-200 shadow-[0_2px_4px_rgba(0,0,0,0.01)] mt-3">
-                                        <div class="flex gap-2 mb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                            <i data-lucide="message-square" class="w-4 h-4"></i> Testo originale
-                                        </div>
-                                        <p class="text-slate-700">
-                                            Continuano i lavori per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.
-                                        </p>
-                                        <div class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 font-medium">
-                                            <span class="flex items-center gap-1">👍 58 Like</span>
-                                            <span class="flex items-center gap-1">💬 12 Commenti</span>
-                                            <span class="flex items-center gap-1">↗️ 5 Condivisioni</span>
-                                            <span class="ml-auto text-[10px] font-mono text-slate-400 flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3"></i> Pubblico</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Post Attachment Image -->
-                                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                                        <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&h=400&fit=crop&auto=format" alt="Cantieri stradali Milano" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-500">
-                                        <div class="bg-slate-50 px-3 py-2 border-t border-slate-200 flex items-center gap-2 text-[11px] text-slate-400">
-                                            <i data-lucide="image" class="w-3 h-3"></i>
-                                            <span>Immagine allegata al post Facebook</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- NLP Analysis Result -->
-                                    <div class="mt-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-slate-50 border border-blue-200/60 shadow-sm">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <div class="bg-alert-info text-white p-1.5 rounded-md shadow-sm">
-                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                            </div>
-                                            <span class="text-[11px] font-bold text-alert-info uppercase tracking-wider">Analisi IA</span>
-                                            <span class="ml-auto text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">conf: 95.4%</span>
-                                        </div>
-                                        <p class="text-sm font-medium text-slate-800 mb-3 leading-relaxed">Lavori in corso per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.</p>
-                                        <div class="flex items-center gap-2 text-[11px] text-slate-500">
-                                            <i data-lucide="map-pin" class="w-3 h-3 text-blue-400"></i>
-                                            <span class="font-medium">Luoghi citati:</span>
-                                            <span class="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">San Babila, Milano</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-wrap gap-3">
-                                        <button onclick="dismissAlert('alert-3')" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-500 hover:bg-slate-100 hover:text-slate-700 hover:border-slate-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 active:scale-95 shadow-sm">
-                                            <i data-lucide="x" class="w-4 h-4"></i> Ignora / Rimuovi
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Compliance Footer -->
-                <div class="mt-8 text-center flex flex-col items-center justify-center gap-2 pb-6">
-                    <div class="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer" onclick="showToast('Conforme allo standard globale Meta per App Pubbliche.', 'success')">
-                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                        Meta App Review Compliance Standard Met
-                    </div>
-                    <p class="text-[11px] text-slate-400 max-w-lg mt-1 leading-relaxed">
-                        Sistema connesso in modo sicuro tramite le <strong>Graph API v20.0</strong> di Meta. I dati mostrati si riferiscono a <strong>Pagine Pubbliche</strong> e rispettano rigorosamente le policy di Data Privacy governative.
-                    </p>
-                </div>
-                
-            </div>
-        </div>
-    </main>
-
-    <!-- UI Overlay Components -->
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
-
-    <!-- Raw Data Modal for App Review Proof -->
-    <div id="raw-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
-        <div id="raw-modal-content" class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
-            <div class="bg-slate-800 text-white px-6 py-4 flex justify-between items-center">
-                <h3 class="font-bold flex items-center gap-2">
-                    <i data-lucide="code" class="w-5 h-5 text-blue-400"></i> Dati Raw Meta Graph API Payload
-                </h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors p-1 rounded-md hover:bg-slate-700">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="p-0 bg-slate-900 overflow-x-auto">
-                <div class="px-4 py-2 border-b border-slate-700 flex justify-between items-center text-xs text-slate-400 font-mono">
-                    <span>GET /v20.0/{page-id}/feed</span>
-                    <span class="text-green-400">200 OK</span>
-                </div>
-                <pre id="raw-json-content" class="text-green-300 font-mono text-sm p-6 overflow-x-auto"></pre>
-            </div>
-            <div class="bg-slate-100 px-6 py-4 flex justify-between items-center border-t border-slate-200">
-                <span class="text-xs text-slate-500 flex items-center gap-1 font-medium">
-                    <i data-lucide="lock" class="w-3 h-3 text-slate-400"></i> Dati sicuri (Sola Lettura)
-                </span>
-                <button onclick="closeModal()" class="px-5 py-2.5 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors shadow-sm active:scale-95">
-                    Chiudi Visualizzatore
-                </button>
-            </div>
-        </div>
+  <div class="content">
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="icon-badge">📷</div>
+        <span class="delta up">↗ +12%</span>
+        <div class="label">Account IG Monitorati</div>
+        <div class="value">142 <span class="unit">attive ora</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-badge">📄</div>
+        <span class="delta up">↗ +5.4%</span>
+        <div class="label">Post Analizzati (ultime 24h)</div>
+        <div class="value">1.054</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-badge">⚠</div>
+        <span class="delta flag">AZIONE RICHIESTA</span>
+        <div class="label">Allerte IA Rilevate</div>
+        <div class="value" id="alertCount">3</div>
+      </div>
     </div>
 
-    <!-- Initialization and Interactivity Script -->
-    <script>
-        // Init icons
-        lucide.createIcons();
+    <div class="feed-panel">
+      <div class="feed-head">
+        <div>
+          <h2>Feed Allerte in Tempo Reale</h2>
+          <div class="note">Dati estratti via Instagram Graph API (Business Discovery) e classificati da modello NLP.</div>
+        </div>
+        <div class="feed-actions">
+          <button class="btn-outline">☰ Filtra</button>
+          <button class="btn-outline solid" id="refreshBtn" onclick="refreshFeed()"><span class="refresh-ico">↻</span> Aggiorna</button>
+        </div>
+      </div>
 
-        // Initialize Leaflet Map
-        const map = L.map('alert-map', { zoomControl: false }).setView([42.0, 12.5], 5.5);
-        L.control.zoom({ position: 'topright' }).addTo(map);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-            maxZoom: 18
-        }).addTo(map);
+      <div class="feed-list">
 
-        // Custom marker icons by severity
-        function createMarker(color) {
-            return L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="background:${color};width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px ${color}88;"></div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
+        <!-- Card 1 -->
+        <div class="alert-item sev-red" id="card1">
+          <div class="alert-top">
+            <div class="ig-avatar"></div>
+            <div class="alert-meta">
+              <div class="account">@comunedigenova <span class="verified">✓</span></div>
+              <div class="time">🕓 Oggi, 14:30</div>
+            </div>
+            <div class="id-tag">ID: 17895 1584736284</div>
+          </div>
+          <span class="badge red">⚠ ALLERTA ROSSA - RISCHIO IDROGEOLOGICO</span>
+          <div class="extract-box">
+            <div class="extract-label">▭ Caption originale estratta</div>
+            <div class="body"><strong>AVVISO ALLA CITTADINANZA:</strong> Diramata allerta meteo ROSSA per piogge diffuse e temporali forti a partire dalle <mark>ore 18:00</mark> di oggi. Scuole chiuse nella giornata di <mark>domani</mark>. Evitare gli spostamenti non necessari.</div>
+          </div>
+          <div class="card-actions">
+            <button class="escalate" onclick="dismissCard('card1')">📣 Escala a Protezione Civile</button>
+            <button onclick="openModal('modal1')">&lt;&gt; Dati Meta Raw (JSON)</button>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="alert-item sev-yellow" id="card2">
+          <div class="alert-top">
+            <div class="ig-avatar"></div>
+            <div class="alert-meta">
+              <div class="account">@protezionecivile <span class="verified">✓</span></div>
+              <div class="time">🕓 Oggi, 13:15</div>
+            </div>
+            <div class="id-tag">ID: 17895 1584736285</div>
+          </div>
+          <span class="badge yellow">⚡ ALLERTA GIALLA - VENTO FORTE</span>
+          <div class="extract-box">
+            <div class="extract-label">▭ Caption originale</div>
+            <div class="body">Maltempo in arrivo al <mark>Centro-Sud</mark>. Venti di burrasca e mareggiate lungo le coste tirreniche. Segui gli aggiornamenti sul nostro profilo.</div>
+          </div>
+          <div class="card-actions">
+            <button class="monitor" onclick="openModal('modal2')">◎ Monitora Evoluzione</button>
+            <button onclick="dismissCard('card2')">✓ Risolto / Archivio</button>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="alert-item sev-blue" id="card3">
+          <div class="alert-top">
+            <div class="ig-avatar"></div>
+            <div class="alert-meta">
+              <div class="account">@comunedimilano <span class="verified">✓</span></div>
+              <div class="time">🕓 Ieri, 09:00</div>
+            </div>
+            <div class="id-tag">ID: 17895 1584736286</div>
+          </div>
+          <span class="badge blue">ⓘ INFORMATIVO - NESSUN RISCHIO</span>
+          <div class="extract-box">
+            <div class="extract-label">▭ Caption originale</div>
+            <div class="body">Continuano i lavori per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.</div>
+          </div>
+          <div class="card-actions">
+            <button onclick="dismissCard('card3')">✕ Ignora / Rimuovi</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="compliance-strip">
+        <div class="head">✓ Meta App Review Compliance Standard Met</div>
+        Sistema connesso in modo sicuro tramite le <strong>Instagram Graph API v21.0</strong>. I dati mostrati si riferiscono ad <strong>account Business/Creator pubblici</strong> raggiunti tramite Business Discovery, e rispettano rigorosamente le policy di Data Privacy governative.
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal 1 -->
+<div class="modal-overlay" id="modal1">
+  <div class="modal">
+    <div class="modal-head">
+      <span>&lt;&gt; Dati Raw Meta Graph API Payload</span>
+      <button class="close" onclick="closeModal('modal1')">✕</button>
+    </div>
+    <div class="modal-req">
+      <span>GET /v21.0/{ig-user-id}?fields=business_discovery.username(comunedigenova){media{caption,timestamp,permalink}}</span>
+      <span class="ok">200 OK</span>
+    </div>
+    <div class="modal-body">{
+  <span class="k">"id"</span>: <span class="s">"17895158473600000"</span>,
+  <span class="k">"business_discovery"</span>: {
+    <span class="k">"username"</span>: <span class="s">"comunedigenova"</span>,
+    <span class="k">"media"</span>: {
+      <span class="k">"data"</span>: [
+        {
+          <span class="k">"id"</span>: <span class="s">"17895_1584736284"</span>,
+          <span class="k">"caption"</span>: <span class="s">"AVVISO ALLA CITTADINANZA: Diramata allerta meteo ROSSA per piogge di..."</span>,
+          <span class="k">"timestamp"</span>: <span class="s">"2026-09-12T11:08:38+0000"</span>,
+          <span class="k">"permalink"</span>: <span class="s">"https://www.instagram.com/p/C8xYzAbCdEf/"</span>,
+          <span class="k">"__internal_nlp_analysis__"</span>: {
+            <span class="k">"status"</span>: <span class="s">"PROCESSED"</span>,
+            <span class="k">"threat_level"</span>: <span class="s">"RED (CRITICAL)"</span>,
+            <span class="k">"category"</span>: <span class="s">"HYDROGEOLOGICAL_ALERT"</span>,
+            <span class="k">"confidence_score"</span>: <span class="n">0.982</span>,
+            <span class="k">"extracted_entities"</span>: [
+              { <span class="k">"type"</span>: <span class="s">"LOCATION"</span>, <span class="k">"value"</span>: <span class="s">"Genova"</span> },
+              { <span class="k">"type"</span>: <span class="s">"DATETIME"</span>, <span class="k">"value"</span>: <span class="s">"Oggi 18:00"</span> },
+              { <span class="k">"type"</span>: <span class="s">"DATETIME"</span>, <span class="k">"value"</span>: <span class="s">"Domani"</span> }
+            ]
+          }
         }
+      ]
+    }
+  }
+}</div>
+    <div class="modal-foot">
+      <span>🔒 Dati sicuri (Sola Lettura)</span>
+      <button onclick="closeModal('modal1')">Chiudi Visualizzatore</button>
+    </div>
+  </div>
+</div>
 
-        // Alert markers
-        const redIcon = createMarker('#D32F2F');
-        const yellowIcon = createMarker('#F57C00');
-        const blueIcon = createMarker('#1976D2');
-
-        L.marker([44.4056, 8.9463], { icon: redIcon })
-            .addTo(map)
-            .bindPopup('<div style="font-family:Inter,sans-serif"><strong style="color:#D32F2F">ALLERTA ROSSA</strong><br>Protezione Civile Liguria<br><em>Rischio Idrogeologico</em></div>');
-
-        L.marker([40.8518, 14.2681], { icon: yellowIcon })
-            .addTo(map)
-            .bindPopup('<div style="font-family:Inter,sans-serif"><strong style="color:#F57C00">ALLERTA GIALLA</strong><br>Protezione Civile Campania<br><em>Vento Forte</em></div>');
-
-        L.marker([45.4642, 9.1900], { icon: blueIcon })
-            .addTo(map)
-            .bindPopup('<div style="font-family:Inter,sans-serif"><strong style="color:#1976D2">INFORMATIVO</strong><br>Comune di Milano<br><em>Viabilità - Lavori in corso</em></div>');
-
-        // Pulsing circle for red alert
-        L.circle([44.4056, 8.9463], { radius: 30000, color: '#D32F2F', fillColor: '#D32F2F', fillOpacity: 0.12, weight: 2 }).addTo(map);
-
-        // App state
-        let alertCount = 3;
-
-        // Toast System
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let iconCode = `<i data-lucide="info" class="w-5 h-5 text-blue-500"></i>`;
-            let borderClass = 'border-blue-200';
-            
-            if(type === 'success') {
-                iconCode = `<i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>`;
-                borderClass = 'border-green-200';
-            } else if(type === 'warning' || type === 'error') {
-                iconCode = `<i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>`;
-                borderClass = 'border-red-200';
-            }
-
-            toast.className = `toast-enter bg-white px-5 py-4 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border ${borderClass} flex items-center gap-3 min-w-[300px] pointer-events-auto`;
-            toast.innerHTML = `
-                <div class="flex-shrink-0">${iconCode}</div>
-                <span class="text-sm font-medium text-slate-700 leading-tight">${message}</span>
-            `;
-            
-            container.appendChild(toast);
-            lucide.createIcons({ root: toast });
-
-            // Auto dismiss
-            setTimeout(() => {
-                toast.classList.replace('toast-enter', 'toast-exit');
-                setTimeout(() => toast.remove(), 350);
-            }, 3500);
+<!-- Modal 2 -->
+<div class="modal-overlay" id="modal2">
+  <div class="modal">
+    <div class="modal-head">
+      <span>&lt;&gt; Dati Raw Meta Graph API Payload</span>
+      <button class="close" onclick="closeModal('modal2')">✕</button>
+    </div>
+    <div class="modal-req">
+      <span>GET /v21.0/{ig-user-id}?fields=business_discovery.username(protezionecivile){media{caption,timestamp,permalink}}</span>
+      <span class="ok">200 OK</span>
+    </div>
+    <div class="modal-body">{
+  <span class="k">"id"</span>: <span class="s">"17895158473600001"</span>,
+  <span class="k">"business_discovery"</span>: {
+    <span class="k">"username"</span>: <span class="s">"protezionecivile"</span>,
+    <span class="k">"media"</span>: {
+      <span class="k">"data"</span>: [
+        {
+          <span class="k">"id"</span>: <span class="s">"17895_1584736285"</span>,
+          <span class="k">"caption"</span>: <span class="s">"Maltempo in arrivo al Centro-Sud. Venti di burrasca e mareggiate..."</span>,
+          <span class="k">"timestamp"</span>: <span class="s">"2026-09-12T09:15:02+0000"</span>,
+          <span class="k">"permalink"</span>: <span class="s">"https://www.instagram.com/p/C8xAbCwXyZ1/"</span>,
+          <span class="k">"__internal_nlp_analysis__"</span>: {
+            <span class="k">"status"</span>: <span class="s">"PROCESSED"</span>,
+            <span class="k">"threat_level"</span>: <span class="s">"YELLOW (MODERATE)"</span>,
+            <span class="k">"category"</span>: <span class="s">"WIND_ALERT"</span>,
+            <span class="k">"confidence_score"</span>: <span class="n">0.917</span>
+          }
         }
+      ]
+    }
+  }
+}</div>
+    <div class="modal-foot">
+      <span>🔒 Dati sicuri (Sola Lettura)</span>
+      <button onclick="closeModal('modal2')">Chiudi Visualizzatore</button>
+    </div>
+  </div>
+</div>
 
-        // Action: Dismiss/Resolve Alert
-        function dismissAlert(id) {
-            const el = document.getElementById(id);
-            if(el) {
-                // Add CSS animation class
-                el.classList.add('fade-out-card');
-                
-                // Remove from DOM and update counter after animation completes
-                setTimeout(() => {
-                    el.style.display = 'none';
-                    updateCounter();
-                }, 400); // matches CSS animation duration
-                
-                showToast('Avviso archiviato correttamente dal feed.', 'success');
-            }
-        }
+<div class="toast" id="toast"><span class="ok-dot">✓</span> <span id="toastText">Feed sincronizzato con successo. API Meta Data fetch completato.</span></div>
 
-        // Update the KPI Counter
-        function updateCounter() {
-            alertCount--;
-            const counterEl = document.getElementById('alert-counter');
-            if(counterEl) {
-                // Flash animation
-                counterEl.style.transform = 'scale(1.2)';
-                counterEl.style.color = '#4caf50'; // green briefly
-                
-                counterEl.innerText = Math.max(0, alertCount);
-                
-                setTimeout(() => {
-                    if (alertCount === 0) {
-                        counterEl.className = 'text-3xl font-bold text-green-500 tracking-tight transition-all';
-                    } else {
-                        counterEl.style.transform = 'scale(1)';
-                        counterEl.style.color = ''; // reset to class color
-                    }
-                }, 300);
-            }
-        }
+<script>
+function dismissCard(id) {
+  const el = document.getElementById(id);
+  el.classList.add('dismissed');
+  const counter = document.getElementById('alertCount');
+  const current = parseInt(counter.textContent, 10);
+  if (current > 0) counter.textContent = current - 1;
+}
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(function(o) { o.classList.remove('open'); });
+  }
+});
 
-        // Action: Escalate
-        function escalaAlert(id, btn) {
-            // Prevent multiple clicks
-            if (btn.disabled) return;
-            
-            const originalWidth = btn.offsetWidth;
-            btn.style.width = `${originalWidth}px`; // Lock width
-            
-            // Loading state
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-white/80"></i> Elaborazione invio...`;
-            btn.classList.replace('bg-alert-high', 'bg-red-900');
-            btn.disabled = true;
-            lucide.createIcons({ root: btn });
-            
-            // Success state after network simulation
-            setTimeout(() => {
-                btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Segnalato`;
-                btn.classList.replace('bg-red-900', 'bg-green-600');
-                btn.classList.remove('hover:bg-[#b71c1c]', 'shadow-red-500/20');
-                btn.classList.add('shadow-green-500/20');
-                lucide.createIcons({ root: btn });
-                
-                showToast('Avviso inoltrato al database della Protezione Civile!', 'success');
-            }, 1500);
-        }
+function refreshFeed() {
+  const btn = document.getElementById('refreshBtn');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+  if (btn.classList.contains('spinning')) return;
+  btn.classList.add('spinning');
+  toast.classList.remove('show');
+  setTimeout(function() {
+    btn.classList.remove('spinning');
+    toastText.textContent = 'Feed sincronizzato con successo. API Instagram Data fetch completato.';
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 3200);
+  }, 900);
+}
+</script>
 
-        // Action: Monitor Toggle
-        function monitoraEvoluzione(btn) {
-            let iconSpan = btn.querySelector('span');
-            
-            if(btn.dataset.active === 'true') {
-                btn.dataset.active = 'false';
-                btn.innerHTML = `<i data-lucide="eye" class="w-4 h-4"></i> <span>Monitora Evoluzione</span>`;
-                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-blue-500/30');
-                btn.classList.add('bg-brand', 'text-white');
-                showToast('Monitoraggio realtime live disattivato.', 'info');
-            } else {
-                btn.dataset.active = 'true';
-                btn.innerHTML = `<i data-lucide="radio" class="w-4 h-4 animate-pulse"></i> <span>Monitoraggio Attivo</span>`;
-                btn.classList.remove('bg-brand');
-                btn.classList.add('bg-blue-600', 'shadow-blue-500/30');
-                showToast('Connessione WebSocket attivata per tracciare nuovi commenti.', 'success');
-            }
-            lucide.createIcons({ root: btn });
-        }
-
-        // Action: Refresh Feed
-        function refreshFeed(btn) {
-            const iconSpan = document.getElementById('refresh-icon');
-            iconSpan.innerHTML = `<i data-lucide="refresh-ccw" class="w-4 h-4 animate-spin"></i>`;
-            lucide.createIcons({ root: btn });
-            
-            const liveDot = document.getElementById('live-indicator');
-            liveDot.classList.replace('bg-brand', 'bg-green-400');
-            
-            setTimeout(() => {
-                iconSpan.innerHTML = `<i data-lucide="refresh-ccw" class="w-4 h-4"></i>`;
-                lucide.createIcons({ root: btn });
-                liveDot.classList.replace('bg-green-400', 'bg-brand');
-                showToast('Feed sincronizzato con successo. API Meta Data fetch completato.', 'success');
-            }, 1200);
-        }
-
-        // Meta Graph API JSON Response Mock Data
-        const rawMocks = {
-            '101584736284': {
-                "id": "101584736284_101584736284",
-                "from": {
-                    "name": "Protezione Civile Regione Liguria",
-                    "id": "1015847360000"
-                },
-                "message": "AVVISO ALLA CITTADINANZA: Diramata allerta meteo ROSSA per piogge diffuse e temporali forti a partire dalle ore 18:00 di oggi. Scuole chiuse nella giornata di domani. Evitare gli spostamenti non necessari.",
-                "created_time": new Date().toISOString(),
-                "permalink_url": "https://www.facebook.com/1015847360000/posts/101584736284",
-                "likes": { "summary": { "total_count": 312 } },
-                "comments": { "summary": { "total_count": 47 } },
-                "shares": { "count": 89 },
-                "__internal_nlp_analysis__": {
-                    "is_emergency": true,
-                    "severity_level": "ROSSA",
-                    "event_type": "Meteo / Idrogeologico",
-                    "summary": "Allerta meteo rossa dalle 18:00 per piogge forti. Chiusura scuole per domani.",
-                    "key_instructions": [
-                        "Evitare spostamenti non necessari",
-                        "Non sostare nei pressi di corsi d'acqua"
-                    ],
-                    "locations_mentioned": [
-                        "Genova",
-                        "fiume Polcevera"
-                    ],
-                    "status": "PROCESSED",
-                    "confidence_score": 0.982
-                }
-            },
-            '101584736285': {
-                "id": "101584736285_101584736285",
-                "from": {
-                    "name": "Protezione Civile Regione Campania",
-                    "id": "1015847360001"
-                },
-                "message": "Maltempo in arrivo al Centro-Sud. Venti di burrasca e mareggiate lungo le coste tirreniche. Segui gli aggiornamenti sul nostro sito.",
-                "created_time": new Date().toISOString(),
-                "permalink_url": "https://www.facebook.com/1015847360001/posts/101584736285",
-                "likes": { "summary": { "total_count": 145 } },
-                "comments": { "summary": { "total_count": 32 } },
-                "shares": { "count": 56 },
-                "__internal_nlp_analysis__": {
-                    "is_emergency": true,
-                    "severity_level": "GIALLA",
-                    "event_type": "Meteo",
-                    "summary": "Maltempo al Centro-Sud con venti di burrasca e mareggiate lungo le coste tirreniche.",
-                    "key_instructions": [
-                        "Seguire aggiornamenti ufficiali",
-                        "Evitare zone costiere esposte"
-                    ],
-                    "locations_mentioned": [
-                        "Centro-Sud",
-                        "Coste tirreniche"
-                    ],
-                    "status": "PROCESSED",
-                    "confidence_score": 0.917
-                }
-            },
-            '101584736286': {
-                "id": "101584736286_101584736286",
-                "from": {
-                    "name": "Comune di Milano - Ufficiale",
-                    "id": "1015847360002"
-                },
-                "message": "Continuano i lavori per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.",
-                "created_time": new Date().toISOString(),
-                "permalink_url": "https://www.facebook.com/1015847360002/posts/101584736286",
-                "likes": { "summary": { "total_count": 58 } },
-                "comments": { "summary": { "total_count": 12 } },
-                "shares": { "count": 5 },
-                "__internal_nlp_analysis__": {
-                    "is_emergency": false,
-                    "severity_level": "VERDE",
-                    "event_type": null,
-                    "summary": "Lavori in corso per la nuova linea metropolitana. Modifiche alla viabilità in zona San Babila.",
-                    "key_instructions": [],
-                    "locations_mentioned": [
-                        "San Babila, Milano"
-                    ],
-                    "status": "PROCESSED",
-                    "confidence_score": 0.954
-                }
-            }
-        };
-
-        // Action: Show Raw API Data Details (Crutial for Meta Review)
-        function showRawData(apiId) {
-            const modal = document.getElementById('raw-modal');
-            const content = document.getElementById('raw-modal-content');
-            const jsonPre = document.getElementById('raw-json-content');
-            
-            let data = rawMocks[apiId] || { error: "Dato non presente nel mock corrente." };
-            jsonPre.innerText = JSON.stringify(data, null, 4);
-            
-            // Show modal background
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            // Trigger content animation with slight delay for transition
-            setTimeout(() => {
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-
-        // Action: Close Modal
-        function closeModal() {
-            const modal = document.getElementById('raw-modal');
-            const content = document.getElementById('raw-modal-content');
-            
-            // Revert animation
-            content.classList.remove('scale-100', 'opacity-100');
-            content.classList.add('scale-95', 'opacity-0');
-            
-            // Hide after animation finishes
-            setTimeout(() => {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }, 300); // matches duration-300 in CSS class
-        }
-    </script>
 </body>
 </html>
